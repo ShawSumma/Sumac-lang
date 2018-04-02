@@ -5,15 +5,17 @@ class Token:
         global code
         end_pos = match.span()[1]
         self.raw_data = code[:end_pos]
+        if self.raw_data in ['int','char','bool','if','while','for','loop','else','elif']:
+            type = 'keyword'
         self.type = type
         self.line = line
         code = code[end_pos:]
     def __str__(self):
         return 'token({}) : {}'.format(self.type,self.raw_data)
     __repr__ = __str__
-def view_token(tokens):
+def view_tokens(tokens):
     for i in tokens:
-        print(i[0], '    ' * 2, i[1])
+        print(i)
 
 def tokenize(file):
     global code
@@ -49,7 +51,7 @@ def tokenize(file):
     line = 1
     #loop until no tokens
     while 1:
-        print(code)
+        #print(code)
         while len(code) > 0 and code[0] in '\n\t ':
             if code[0] == '\n':
                 line += 1
@@ -68,4 +70,4 @@ def tokenize(file):
             break
     return return_tokens
 tokens = tokenize('source.txt')
-print(tokens)
+view_tokens(tokens)
