@@ -1,1 +1,5 @@
-10
+`if not defined PKG_OTHER`
+`putstr Imported other.txt`
+`define PKG_OTHER another package`
+x = 10
+`end if`
