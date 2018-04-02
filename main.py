@@ -28,6 +28,7 @@ def view_tokens(tokens):
 
 
 def macro(code):
+    global defined
     pl = 0
     while pl < len(code):
         if code[pl] == '`':
@@ -38,17 +39,98 @@ def macro(code):
                 code = code
                 mat += code[pl]
                 pl += 1
+
             if mat.startswith('include'):
                 fopen = open(mat[len('include')+1:])
                 new_code = fopen.read()
                 fopen.close()
+                new_code = macro(new_code)
                 code = code[:original_pl]+new_code+code[pl+1:]
+
+            elif mat.startswith('define'):
+                to_define = mat.split()[1]
+                set_to = mat[7+len(to_define):]
+                if set_to != '':
+                    defined[to_define] = set_to
+                else:
+                    defined[to_define] = 'Empty Definition'
+                code = code[:original_pl]+code[pl+1:]
+
+            elif mat.startswith('undefine'):
+                to_define = mat.split()[1]
+                set_to = mat[7+len(to_define):]
+                if to_define in defined:
+                    del defined[to_define]
+                code = code[:original_pl]+code[pl+1:]
+
+            elif mat.startswith('print'):
+                print_out = mat.split()[1]
+                if print_out == '*':
+                    for i in defined:
+                        print(i, ':', defined[i])
+                elif print_out in defined:
+                    print(print_out, ':', defined[print_out])
+                else:
+                    print(print_out, ': Not defined')
+                code = code[:original_pl]+code[pl+1:]
+
+            elif mat.startswith('putstr'):
+                print(mat[7:])
+                code = code[:original_pl]+code[pl+1:]
+
+            elif mat.startswith('if'):
+                perams = mat.split()[1:]
+                invert = perams[0] == 'not'
+                if invert:
+                    perams = perams[1:]
+                if perams[0] == 'defined':
+                    cond = perams[1] in defined
+                elif perams[0] == 'equal':
+                    if perams[2] != 'expr':
+                        if perams[1] in defined:
+                            var_pre = defined[perams[1]]
+                        else:
+                            var_pre = None
+                        if perams[2] in defined:
+                            var_post = defined[perams[2]]
+                        else:
+                            var_post = None
+                        cond = var_pre == var_post
+                else:
+                    exit()
+                if invert:
+                    cond = not cond
+                code = code[:original_pl]+code[pl+1:]
+                depth = 1
+                interm = ''
+                while depth > 0:
+                    if code[original_pl:].startswith('`if'):
+                        depth += 1
+                    elif code[original_pl:].startswith('`end if'):
+                        depth -= 1
+                    interm += code[original_pl+1]
+                    code = code[:original_pl]+code[original_pl+1:]
+                interm = interm[:-2]
+                if cond:
+                    # print('--now interm--')
+                    # print(interm)
+                    # print('--end interm--')
+                    interm = macro(interm)
+                else:
+                    interm = ''
+                pre = code[:original_pl]
+                post = code[original_pl:]
+                code = pre+interm+post[7:]
+            pl = original_pl
         elif code[pl] in '\"\'':
             cpl = code[pl]
             pl += 1
             while pl < len(code) and code[pl] != cpl:
                 pl += 1
         pl += 1
+    # print('--now code--')
+    # print(code)
+    # print('--end code--')
     return code
 
 
@@ -57,6 +139,8 @@ def tokenize(file):
     global line
     global col
     global keywords
+    global defined
+    defined = {}
     keywords = [
         'int',
         'char',
@@ -139,7 +223,7 @@ def tokenize(file):
                     continue
         if end_flag:
             break
-    print("lex er on line %s at col %s" % (line, col))
+    print("lexer error")
     exit()
 
 
