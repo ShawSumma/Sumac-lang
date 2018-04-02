@@ -66,12 +66,18 @@ def tokenize(file):
             code = code[1:]
         matches = {}
 
-        for i in operators:
-            #print(i,[code[:len(i)],i],code[:len(i)] == i)
-            if code[:len(i)] == i:
-                return_tokens.append(Token('operator',i))
-                end_flag = False
-                continue
+        if code[0] in brace_types:
+            return_tokens.append(Token(brace_names[code[0]],code[0]))
+            end_flag = True
+            continue
+        if end_flag:
+            for i in operators:
+                #print(i,[code[:len(i)],i],code[:len(i)] == i)
+                if code[:len(i)] == i:
+                    return_tokens.append(Token('operator',i))
+                    end_flag = False
+                    continue
+
         if end_flag:
             for i in compiled_regexes:
                 matches[i] = compiled_regexes[i].match(code)
