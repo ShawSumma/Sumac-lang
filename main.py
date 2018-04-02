@@ -57,7 +57,7 @@ def tokenize(file):
 
     #loop until no tokens
     while 1:
-        print(code)
+        #print(code)
         end_flag = True
 
         while len(code) > 0 and code[0] in '\n\t ':
@@ -65,7 +65,9 @@ def tokenize(file):
                 line += 1
             code = code[1:]
         matches = {}
-
+        if len(code) == 0:
+            return return_tokens
+            
         if code[0] in brace_types:
             return_tokens.append(Token(brace_names[code[0]],code[0]))
             end_flag = True
@@ -92,6 +94,6 @@ def tokenize(file):
 
         if end_flag:
             break
-    return return_tokens
+    print("lex er on line %s" % line)
 tokens = tokenize('source.txt')
 view_tokens(tokens)
