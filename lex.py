@@ -134,7 +134,7 @@ def macro(code):
     return code
 
 
-def tokenize(file):
+def tokenize(incode):
     global code
     global line
     global col
@@ -152,7 +152,7 @@ def tokenize(file):
         'else',
         'elif'
     ]
-    code = macro(code)
+    code = macro(incode)
     match_regexes = {
         'name': r'[a-zA-Z_]+[a-zA-Z]*',
         'int': r'[0-9]+',
