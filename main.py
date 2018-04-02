@@ -3,6 +3,7 @@ import re
 class Token:
     def __init__(self, type, match):
         global code
+        global col
         #print(match)
         if isinstance(match,str):
             end_pos = len(match)
@@ -13,6 +14,7 @@ class Token:
             type = 'keyword'
         self.type = type
         self.line = line
+        col += end_pos
         code = code[end_pos:]
     def __str__(self):
         return 'token({}) : {}'.format(self.type,self.raw_data)
@@ -25,6 +27,7 @@ def view_tokens(tokens):
 def tokenize(file):
     global code
     global line
+    global col
     code = open(file).read()
 
     match_regexes = {
@@ -54,7 +57,7 @@ def tokenize(file):
     #print(compiled_regexes)
     return_tokens = []
     line = 1
-
+    col = 1
     #loop until no tokens
     while 1:
         #print(code)
@@ -63,15 +66,18 @@ def tokenize(file):
         while len(code) > 0 and code[0] in '\n\t ':
             if code[0] == '\n':
                 line += 1
+                col = 0
             code = code[1:]
+            col += 1
         matches = {}
         if len(code) == 0:
             return return_tokens
-            
+
         if code[0] in brace_types:
             return_tokens.append(Token(brace_names[code[0]],code[0]))
             end_flag = True
             continue
+            
         if end_flag:
             for i in operators:
                 #print(i,[code[:len(i)],i],code[:len(i)] == i)
@@ -94,6 +100,7 @@ def tokenize(file):
 
         if end_flag:
             break
-    print("lex er on line %s" % line)
+    print("lex er on line %s at col %s" % (line,col))
+    exit()
 tokens = tokenize('source.txt')
 view_tokens(tokens)
