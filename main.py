@@ -5,11 +5,20 @@ class Token:
     def __init__(self, type, match):
         global code
         global col
+<<<<<<< HEAD
+=======
+        # print(match)
+>>>>>>> 0464c084babd6dd8e5eecf892a6d9017e9fa5726
         if isinstance(match, str):
             end_pos = len(match)
         else:
             end_pos = match.span()[1]
         self.raw_data = code[:end_pos]
+<<<<<<< HEAD
+=======
+        keywords = ['int', 'char', 'bool', 'if', 'while', 'for', 'loop',
+                    'else', 'elif']
+>>>>>>> 0464c084babd6dd8e5eecf892a6d9017e9fa5726
         if self.raw_data in keywords:
             type = 'keyword'
         self.type = type
@@ -35,9 +44,17 @@ def macro(code):
             pl += 1
             mat = ''
             while pl < len(code) and code[pl] != '`':
+<<<<<<< HEAD
                 code = code
                 mat += code[pl]
                 pl += 1
+=======
+                # print(code[pl])
+                code = code
+                mat += code[pl]
+                pl += 1
+            # print(mat)
+>>>>>>> 0464c084babd6dd8e5eecf892a6d9017e9fa5726
             if mat.startswith('include'):
                 fopen = open(mat[len('include')+1:])
                 new_code = fopen.read()
@@ -73,7 +90,12 @@ def tokenize(file):
         'name': r'[a-zA-Z_]+[a-zA-Z]*',
         'int': r'[0-9]+',
         'float': r'([0-9]+\.[0-9]*)|([0-9]*\.[0-9]+)',
+<<<<<<< HEAD
         'semicolon': r';',
+=======
+        # 'operator': r'[+-*/!&<>^%]+ '
+        # Make a list containing the types later
+>>>>>>> 0464c084babd6dd8e5eecf892a6d9017e9fa5726
     }
     compiled_regexes = {}
     for i in match_regexes:
@@ -83,7 +105,7 @@ def tokenize(file):
                  '<=', '>=', '+=', '-=', '*=', '/=', '=', '==', '!=']
     operators.sort(key=lambda op: 100-len(op))
 
-    brace_types = '{}()[]'
+    brace_types = '\{\}()[]'
     brace_names = {
         '(': 'l paren',
         ')': 'r paren',
@@ -92,10 +114,20 @@ def tokenize(file):
         '[': 'r list',
         ']': 'l list',
     }
+<<<<<<< HEAD
     return_tokens = []
     line = 1
     col = 1
     while 1:
+=======
+    # print(compiled_regexes)
+    return_tokens = []
+    line = 1
+    col = 1
+    # loop until no tokens
+    while 1:
+        # print(code)
+>>>>>>> 0464c084babd6dd8e5eecf892a6d9017e9fa5726
         end_flag = True
         while len(code) > 0 and code[0] in '\n\t ':
             if code[0] == '\n':
@@ -115,13 +147,21 @@ def tokenize(file):
             end_flag = True
             continue
 
+<<<<<<< HEAD
         if end_flag and code[0] in brace_types:
+=======
+        if code[0] in brace_types:
+>>>>>>> 0464c084babd6dd8e5eecf892a6d9017e9fa5726
             return_tokens.append(Token(brace_names[code[0]], code[0]))
             end_flag = True
             continue
 
         if end_flag:
             for i in operators:
+<<<<<<< HEAD
+=======
+                # print(i,[code[:len(i)],i],code[:len(i)] == i)
+>>>>>>> 0464c084babd6dd8e5eecf892a6d9017e9fa5726
                 if code[:len(i)] == i:
                     return_tokens.append(Token('operator', i))
                     end_flag = False
@@ -134,6 +174,10 @@ def tokenize(file):
         if end_flag:
             for type in matches:
                 if matches[type] is not None:
+<<<<<<< HEAD
+=======
+                    # print('found a match')
+>>>>>>> 0464c084babd6dd8e5eecf892a6d9017e9fa5726
                     return_tokens.append(Token(type, matches[type]))
                     end_flag = False
                     continue
@@ -143,7 +187,11 @@ def tokenize(file):
     exit()
 
 
+<<<<<<< HEAD
 file = "source.txt"
 code = open(file).read()
 tokens = tokenize(code)
+=======
+tokens = tokenize('source.txt')
+>>>>>>> 0464c084babd6dd8e5eecf892a6d9017e9fa5726
 view_tokens(tokens)
