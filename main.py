@@ -57,7 +57,7 @@ def tokenize(file):
 
     #loop until no tokens
     while 1:
-        #print(code)
+        print(code)
         end_flag = True
 
         while len(code) > 0 and code[0] in '\n\t ':
