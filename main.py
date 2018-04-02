@@ -218,7 +218,15 @@ def tokenize(file):
         if end_flag:
             for type in matches:
                 if matches[type] is not None:
-                    return_tokens.append(Token(type, matches[type]))
+                    if type != 'name':
+                        return_tokens.append(Token(type, matches[type]))
+                    else:
+                        span = matches['name'].span()[1]
+                        data = code[:span]
+                        if data in defined:
+                            code = code[span:]+defined[data]
+                        else:
+                            return_tokens.append(Token(type, matches[type]))
                     end_flag = False
                     continue
         if end_flag:
