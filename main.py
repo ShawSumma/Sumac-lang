@@ -24,12 +24,37 @@ def view_tokens(tokens):
     for i in tokens:
         print(i)
 
+def macro(code):
+    pl = 0
+    while pl < len(code):
+        if code[pl] == '`':
+            original_pl = pl
+            pl += 1
+            mat = ''
+            while pl < len(code) and code[pl] != '`':
+                #print(code[pl])
+                code = code
+                mat += code[pl]
+                pl += 1
+            #print(mat)
+            if mat.startswith('include'):
+                fopen = open(mat[len('include')+1:])
+                new_code = fopen.read()
+                fopen.close()
+                code = code[:original_pl]+new_code+code[pl+1:]
+        elif code[pl] in '\"\'':
+            cpl = code[pl]
+            pl += 1
+            while pl < len(code) and code[pl] != cpl:
+                pl += 1
+        pl += 1
+    return code
 def tokenize(file):
     global code
     global line
     global col
     code = open(file).read()
-
+    code = macro(code)
     match_regexes = {
         'name': r'[a-zA-Z_]+[a-zA-Z]*',
         'int': r'[0-9]+',
@@ -77,7 +102,7 @@ def tokenize(file):
             return_tokens.append(Token(brace_names[code[0]],code[0]))
             end_flag = True
             continue
-            
+
         if end_flag:
             for i in operators:
                 #print(i,[code[:len(i)],i],code[:len(i)] == i)
