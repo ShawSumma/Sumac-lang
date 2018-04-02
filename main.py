@@ -49,7 +49,7 @@ def macro(code):
 
             elif mat.startswith('define'):
                 to_define = mat.split()[1]
-                set_to = mat[7+len(to_define):]
+                set_to = mat[8+len(to_define):]
                 if set_to != '':
                     defined[to_define] = set_to
                 else:
@@ -224,7 +224,7 @@ def tokenize(file):
                         span = matches['name'].span()[1]
                         data = code[:span]
                         if data in defined:
-                            code = code[span:]+defined[data]
+                            code = defined[data]+code[span:]
                         else:
                             return_tokens.append(Token(type, matches[type]))
                     end_flag = False
