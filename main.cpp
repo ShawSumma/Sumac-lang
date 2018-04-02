@@ -63,7 +63,7 @@ int main(){
       else{
         tokenStrings.insert(tokenStrings.begin(),currentToken);
         int tokenTypeStr;
-        if (NowToken != "int" && NowToken != "str"){
+        if (currentToken != "int" && currentToken != "str"){
           tokenTypeStr = 3;
         }
         else {
