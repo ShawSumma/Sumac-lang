@@ -63,11 +63,11 @@ int main(){
       else{
         tokenStrings.insert(tokenStrings.begin(),currentToken);
         int tokenTypeStr;
-        if (currentToken != "int"){/// || currentToken != "str"){
+        if (currentToken == "int" || currentToken == "str"){/// || currentToken != "str"){
           tokenTypeStr = 3;
         }
         else {
-            tokenTypeStr = 1;
+          tokenTypeStr = 1;
         };
         //cout << specials[i] << " " << currentToken <<( specials[i] == currentToken) << endl;
         //cout << tokenTypeStr << endl;
