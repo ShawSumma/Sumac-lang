@@ -18,7 +18,7 @@ class Token:
         code = code[end_pos:]
 
     def __str__(self):
-        return 'token({}) : {}'.format(self.type, self.raw_data)
+        return 'token : {} : {}'.format(self.type, self.raw_data)
     __repr__ = __str__
 
 
@@ -134,7 +134,7 @@ def macro(code):
     return code
 
 
-def tokenize(incode):
+def tokenize(icode):
     global code
     global line
     global col
@@ -152,7 +152,7 @@ def tokenize(incode):
         'else',
         'elif'
     ]
-    code = macro(incode)
+    code = macro(icode)
     match_regexes = {
         'name': r'[a-zA-Z_]+[a-zA-Z]*',
         'int': r'[0-9]+',
@@ -167,14 +167,15 @@ def tokenize(incode):
                  '<=', '>=', '+=', '-=', '*=', '/=', '=', '==', '!=']
     operators.sort(key=lambda op: 100-len(op))
 
-    brace_types = '{}()[]'
+    brace_types = '{}()[],'
     brace_names = {
         '(': 'l paren',
         ')': 'r paren',
         '{': 'l curly',
         '}': 'r curly',
-        '[': 'r list',
-        ']': 'l list',
+        '[': 'l list',
+        ']': 'r list',
+        ',': 'comma'
     }
     return_tokens = []
     line = 1
