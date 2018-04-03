@@ -1,4 +1,6 @@
 import lex
+
+
 class T_code:
 
     def __init__(self, code, type='code'):
@@ -18,9 +20,10 @@ class T_code:
         else:
             tabs = tabs[0]
         print('    |'*tabs+'code: '+self.type+' : '+str(len(self.code)))
-        for pl,i in enumerate(self.code):
+        for i in self.code:
             i.display(tabs=tabs+1)
             print('    |'*(tabs+1))
+
 
 class T_line:
 
