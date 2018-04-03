@@ -1,2 +1,3 @@
 def tree(tokens):
-    pass
+    for i in tokens:
+        print(i)
