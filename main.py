@@ -3,6 +3,6 @@ from tree import tree
 file = "source.txt"
 code = open(file).read()
 tokens = tokenize(code)
-view_tokens(tokens)
+# view_tokens(tokens)
 ast = tree(tokens)
-print(ast)
+ast.display()
