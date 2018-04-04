@@ -268,6 +268,9 @@ class T_function:
         view_single(self.name, tabs, 'name')
         self.perams.display(tabs)
 
+    def to_llvm(self):
+        pass
+
 
 def pair(list, items):
     ret = {}
@@ -287,6 +290,41 @@ def use_var(name):
     if name in name_types:
         return name_types[name]
     print('varriable not found', name)
+
+
+def fold_op(a, b, o):
+    t = a.type
+    if t == 'int':
+        a, b = int(a.raw_data), int(b.raw_data)
+        if o == '+':
+            ret = a + b
+        elif o == '*':
+            ret = a * b
+        elif o == '-':
+            ret = a - b
+        elif o == '/':
+            ret = a / b
+        elif o == '%':
+            ret = a % b
+        elif o == '**':
+            ret = a ** b
+        elif o == '>=':
+            ret = a >= b
+        elif o == '<=':
+            ret = a <= b
+        elif o == '<':
+            ret = a < b
+        elif o == '>':
+            ret = a > b
+        elif o == '!=':
+            ret = a != b
+        elif o == '==':
+            ret = a == b
+        else:
+            return None
+        return int(ret)
+    else:
+        return None
 
 
 def tree_expr(tokens):
@@ -364,7 +402,15 @@ def tree_expr(tokens):
             '*=': Ops.Set_mul,
             '/=': Ops.Set_div,
         }
+        pre_type = type(pre)
+        post_type = type(post)
         ret = ops_map[data](pre, post)
+        if pre_type == post_type:
+            fold = fold_op(pre, post, data)
+            # print(fold)
+            if fold is not None:
+                ret = pre
+                ret.raw_data = str(fold)
         return ret
 
     if len(tokens) == 1:
