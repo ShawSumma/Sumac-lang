@@ -2,6 +2,25 @@ import lex
 import variable
 
 
+def compile_all(tree):
+    global compiled
+    global ctabs
+    ctabs = 0
+    compiled = ''
+    compiled += 'int main(){\n'
+    tree.to_c()
+    compiled += '}'
+    return compiled
+
+
+def add_code(code):
+    global compiled
+    global ctabs
+    compiled += '\t'*ctabs
+    compiled += code
+    compiled += '\n'
+
+
 def view_single(to, tabs, name):
     if isinstance(to, lex.Token):
         print('       '*tabs+' '+name+' : '+str(to))
@@ -89,13 +108,13 @@ class Ops:
         name = 'add'
 
         def to_c(self):
-            pass
+            add_code("{0} + {1}".format(self.pre, self.post))
 
     class Mul(Two_op):
         name = 'multiply'
 
         def to_c(self):
-            pass
+            add_code("{0} + {1}".format(self.pre, self.post))
 
     class Sub(Two_op):
         name = 'subtract'
@@ -248,7 +267,11 @@ class T_code:
             print('       '*(tabs+1))
 
     def to_c(self):
-        pass
+        global ctabs
+        ctabs  += 1
+        for i in self.code:
+            add_code(i)
+        ctabs -= 1
 
 
 class T_line:
