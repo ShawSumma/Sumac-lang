@@ -1,4 +1,5 @@
 import lex
+import variable
 
 
 def view_single(to, tabs, name):
@@ -8,7 +9,7 @@ def view_single(to, tabs, name):
         for pl, i in enumerate(to):
             view_single(i, tabs, 'list')
     else:
-        print('       '*tabs+name+' is next')
+        print('       '*tabs+' '+name+' is next')
         to.display(tabs=tabs)
 
 
@@ -19,7 +20,7 @@ class Chain_op:
         self.chain = chain
 
     def display(self, tabs):
-        print('       '*tabs+' op   : '+self.name)
+        print('       '*tabs+'  op   : '+self.name)
         for pl, i in enumerate(self.chain):
             view_single(i, tabs+1, 'chain '+str(pl))
 
@@ -33,7 +34,7 @@ class Three_op:
         self.cond = cond
 
     def display(self, tabs):
-        print('       '*tabs+' op   : '+self.name)
+        print('       '*tabs+'  op   : '+self.name)
         view_single(self.pre, tabs+1, 'pre ')
         view_single(self.cond, tabs+1, 'cond')
         view_single(self.post, tabs+1, 'post')
@@ -51,7 +52,7 @@ class Two_op:
         self.type = self.pre.type
 
     def display(self, tabs):
-        print('       '*tabs+' op   : '+self.name)
+        print('       '*tabs+'  op   : '+self.name)
         view_single(self.pre, tabs+1, 'pre ')
         view_single(self.post, tabs+1, 'post')
 
@@ -238,6 +239,7 @@ class T_line:
     def __init__(self, tokens):
         code = tree_expr(tokens)
         self.code = code
+        self.type = code.type
 
     def display(self, tabs):
         view_single(self.code, tabs, ' code')
@@ -289,12 +291,14 @@ def pair(list, items):
 def use_var(name):
     if name in name_types:
         return name_types[name]
-    print('varriable not found', name)
+    variable.notFound(name, name_types)
+    # print('varriable not found', name)
+    exit()
 
 
 def fold_op(a, b, o):
     t = a.type
-    if t == 'int':
+    if t == 'int' and a.raw_data.isnumeric() and b.raw_data.isnumeric():
         a, b = int(a.raw_data), int(b.raw_data)
         if o == '+':
             ret = a + b
@@ -366,9 +370,25 @@ def tree_expr(tokens):
         post = tokens[index+1:]
         pre = tree_expr(pre)
         post = tree_expr(post)
-        if data in '=':
-            name_types[pre.raw_data] = post.type
-
+        if data in ['=', '+=', '-=', '/=', '*=']:
+            prexist = pre.raw_data in name_types
+            if prexist:
+                old_type = name_types[pre.raw_data]
+            if post.type != 'name':
+                name_types[pre.raw_data] = post.type
+            else:
+                name_types[pre.raw_data] = use_var(post.raw_data)
+            if prexist:
+                if old_type != name_types[pre.raw_data]:
+                    print(
+                        'variable type miss match',
+                        pre.raw_data,
+                        'should be',
+                        old_type,
+                        'not',
+                        name_types[pre.raw_data]
+                    )
+                    exit()
         math_ops = ['+', '-', '*', '/', '**']
         if data in math_ops:
             if pre.type == 'name':
@@ -414,6 +434,9 @@ def tree_expr(tokens):
         return ret
 
     if len(tokens) == 1:
+        if isinstance(tokens[0], T_code) and tokens[0].type == 'tuple':
+            if len(tokens[0].code) == 1:
+                return tokens[0].code[0]
         return tokens[0]
 
     if len(tokens) > 1:
@@ -448,7 +471,6 @@ def tree(tokens, break_upon='semicolon'):
             pl = curly_mat[pl]
             pass
         elif cur == 'l paren':
-            # cur = tree(tokens[pl+1:paren_mat[pl]], break_upon='comma')
             cur = tokens[pl+1:paren_mat[pl]]
             cur = tree(cur, break_upon='comma')
             ret[-1].append(cur)
@@ -464,8 +486,6 @@ def tree(tokens, break_upon='semicolon'):
         else:
             ret[-1].append(tokens[pl])
         pl += 1
-        # print(pl, i)
-    # print(ret)
     type = 'code' if break_upon == 'semicolon' else 'tuple'
     ret = T_code(ret, type)
     return ret
