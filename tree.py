@@ -60,150 +60,167 @@ class Two_op:
 class One_op:
     name = 'None'
 
-    def __init__(self, pre):
-        self.type = pre.type
-        self.pre = pre
+    def __init__(self, post):
+        self.type = post.type
+        self.post = post
         self.set_type()
 
     def set_type(self):
-        self.type = self.pre.type
+        self.type = self.post.type
 
     def display(self, tabs):
         print('       '*tabs+'op   : '+self.name)
-        view_single(self.pre, tabs+1, 'pre ')
+        view_single(self.post, tabs+1, 'post ')
+
+
+class T_return(One_op):
+    name = 'return'
+
+    def display(self, tabs):
+        print('       '*tabs+'return :')
+        view_single(self.post, tabs+1, 'post ')
+
+    def to_c(self):
+        pass
 
 
 class Ops:
     class Add(Two_op):
         name = 'add'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Mul(Two_op):
         name = 'multiply'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Sub(Two_op):
         name = 'subtract'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Div(Two_op):
         name = 'devide'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Pow(Two_op):
         name = 'raise to'
 
-        def to_llvm(self):
+        def to_c(self):
+            pass
+
+    class Mod(Two_op):
+        name = 'modulo'
+
+        def to_c(self):
             pass
 
     class Not_greater_than(Two_op):
         name = 'less than or equal'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Not_less_than(Two_op):
         name = 'greater than or equal'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Greater_than(Two_op):
         name = 'greater than'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Less_than(Two_op):
         name = 'less than'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Not_equal(Two_op):
         name = 'not equal to'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Equal(Two_op):
         name = 'euqal to'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class And(Two_op):
         name = 'and'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Or(Two_op):
         name = 'Or'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Not(One_op):
         name = 'not'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Negate(One_op):
         name = 'negate'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Pointer(One_op):
         name = 'pointer'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Address_of(One_op):
         name = 'address of'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Set_equal(Two_op):
         name = 'set equal to'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Set_add(Two_op):
         name = 'set and add'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Set_sub(Two_op):
         name = 'set and subtract'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Set_mul(Two_op):
         name = 'set and multiply'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
     class Set_div(Two_op):
         name = 'set and devide'
 
-        def to_llvm(self):
+        def to_c(self):
             pass
 
 
@@ -230,7 +247,7 @@ class T_code:
             i.display(tabs=tabs+1)
             print('       '*(tabs+1))
 
-    def to_llvm(self):
+    def to_c(self):
         pass
 
 
@@ -249,7 +266,7 @@ class T_line:
 
     __repr__ = __str__
 
-    def to_llvm(self):
+    def to_c(self):
         pass
 
 
@@ -270,7 +287,7 @@ class T_function:
         view_single(self.name, tabs, 'name')
         self.perams.display(tabs)
 
-    def to_llvm(self):
+    def to_c(self):
         pass
 
 
@@ -407,6 +424,7 @@ def tree_expr(tokens):
             '*': Ops.Mul,
             '-': Ops.Sub,
             '/': Ops.Div,
+            '%': Ops.Mod,
             '**': Ops.Pow,
             '&&': Ops.And,
             '||': Ops.Sub,
@@ -448,6 +466,10 @@ def tree_expr(tokens):
             ret = T_function(tokens[:-1], tokens[-1])
             ret.type = function_types[fn_name]
             return ret
+        if isinstance(tokens[0], lex.Token):
+            name = tokens[0].raw_data
+            if name == 'return':
+                return T_return(tree_expr(tokens[1:]))
 
 
 def tree(tokens, break_upon='semicolon'):
