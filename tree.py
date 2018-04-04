@@ -1,6 +1,209 @@
 import lex
-from llvm_ops import Ops
 
+
+def view_single(to, tabs, name):
+    if isinstance(to, lex.Token):
+        print('      |'*tabs+' '+name+' : '+str(to))
+    elif isinstance(to, list):
+        for pl, i in enumerate(to):
+            view_single(i, tabs, 'list')
+    else:
+        print('      |'*tabs+name+' is next')
+        to.display(tabs=tabs)
+
+
+class Chain_op:
+    name = 'None'
+
+    def __init__(self, *chain):
+        self.chain = chain
+
+    def display(self, tabs):
+        print('      |'*tabs+' op   : '+self.name)
+        for pl, i in enumerate(self.chain):
+            view_single(i, tabs+1, 'chain '+str(pl))
+
+
+class Three_op:
+    name = 'None'
+
+    def __init__(self, pre, post, cond):
+        self.pre = pre
+        self.post = post
+        self.cond = cond
+
+    def display(self, tabs):
+        print('      |'*tabs+' op   : '+self.name)
+        view_single(self.pre, tabs+1, 'pre ')
+        view_single(self.cond, tabs+1, 'cond')
+        view_single(self.post, tabs+1, 'post')
+
+
+class Two_op:
+    name = 'None'
+
+    def __init__(self, pre, post):
+        self.pre = pre
+        self.post = post
+        self.set_type()
+
+    def set_type(self):
+        self.type = self.pre.type
+
+    def display(self, tabs):
+        print('      |'*tabs+' op   : '+self.name)
+        view_single(self.pre, tabs+1, 'pre ')
+        view_single(self.post, tabs+1, 'post')
+
+
+class One_op:
+    name = 'None'
+
+    def __init__(self, pre):
+        self.type = pre.type
+        self.pre = pre
+        self.set_type()
+
+    def set_type(self):
+        self.type = self.pre.type
+
+    def display(self, tabs):
+        print('      |'*tabs+'op   : '+self.name)
+        view_single(self.pre, tabs+1, 'pre ')
+
+
+class Ops:
+    class Add(Two_op):
+        name = 'add'
+
+        def to_llvm(self):
+            pass
+
+    class Mul(Two_op):
+        name = 'multiply'
+
+        def to_llvm(self):
+            pass
+
+    class Sub(Two_op):
+        name = 'subtract'
+
+        def to_llvm(self):
+            pass
+
+    class Div(Two_op):
+        name = 'devide'
+
+        def to_llvm(self):
+            pass
+
+    class Pow(Two_op):
+        name = 'raise to'
+
+        def to_llvm(self):
+            pass
+
+    class Not_greater_than(Two_op):
+        name = 'less than or equal'
+
+        def to_llvm(self):
+            pass
+
+    class Not_less_than(Two_op):
+        name = 'greater than or equal'
+
+        def to_llvm(self):
+            pass
+
+    class Greater_than(Two_op):
+        name = 'greater than'
+
+        def to_llvm(self):
+            pass
+
+    class Less_than(Two_op):
+        name = 'less than'
+
+        def to_llvm(self):
+            pass
+
+    class Not_equal(Two_op):
+        name = 'not equal to'
+
+        def to_llvm(self):
+            pass
+
+    class Equal(Two_op):
+        name = 'euqal to'
+
+        def to_llvm(self):
+            pass
+
+    class And(Two_op):
+        name = 'and'
+
+        def to_llvm(self):
+            pass
+
+    class Or(Two_op):
+        name = 'Or'
+
+        def to_llvm(self):
+            pass
+
+    class Not(One_op):
+        name = 'not'
+
+        def to_llvm(self):
+            pass
+
+    class Negate(One_op):
+        name = 'negate'
+
+        def to_llvm(self):
+            pass
+
+    class Pointer(One_op):
+        name = 'pointer'
+
+        def to_llvm(self):
+            pass
+
+    class Address_of(One_op):
+        name = 'address of'
+
+        def to_llvm(self):
+            pass
+
+    class Set_equal(Two_op):
+        name = 'set equal to'
+
+        def to_llvm(self):
+            pass
+
+    class Set_add(Two_op):
+        name = 'set and add'
+
+        def to_llvm(self):
+            pass
+
+    class Set_sub(Two_op):
+        name = 'set and subtract'
+
+        def to_llvm(self):
+            pass
+
+    class Set_mul(Two_op):
+        name = 'set and multiply'
+
+        def to_llvm(self):
+            pass
+
+    class Set_div(Two_op):
+        name = 'set and devide'
+
+        def to_llvm(self):
+            pass
 
 class T_code:
 
@@ -46,6 +249,13 @@ class T_line:
     def to_llvm(self):
         pass
 
+class T_none:
+    def __init__(self):
+        pass
+
+    def display(self, *tabs):
+        pass
+
 def pair(list, items):
     ret = {}
     hold = {}
@@ -60,6 +270,12 @@ def pair(list, items):
     return ret
 
 
+def use_var(name):
+    if name in name_types:
+        return name_types[name]
+    print('varriable not found',name)
+
+
 def tree_expr(tokens):
     types = []
     datas = []
@@ -72,6 +288,8 @@ def tree_expr(tokens):
             datas.append(token)
     if 'operator' in types:
         ord_ops = []
+        ord_ops.append(['='])
+        ord_ops.append(['+=', '-=', '*=', '/='])
         ord_ops.append(['&&', '||'])
         ord_ops.append(['<=', '>=', '<', '>'])
         ord_ops.append(['!=', '=='])
@@ -79,7 +297,7 @@ def tree_expr(tokens):
         ord_ops.append(['*', '/'])
         ord_ops.append(['**'])
         ord_ops.append(['error'])
-        # ord_ops = ord_ops[::-1]
+
         found = False
         for order in ord_ops:
             for data in datas:
@@ -91,11 +309,28 @@ def tree_expr(tokens):
         else:
             print('unknown operator')
             exit()
+
         index = datas.index(data)
         pre = tokens[:index]
         post = tokens[index+1:]
         pre = tree_expr(pre)
         post = tree_expr(post)
+        if data in '=':
+            name_types[pre.raw_data] = post.type
+
+        math_ops = ['+', '-', '*', '/', '**']
+        if data in math_ops:
+            if pre.type == 'name':
+                use_var(pre.raw_data)
+                pre.type = name_types[pre.raw_data]
+            if post.type == 'name':
+                use_var(post.raw_data)
+                post.type = name_types[post.raw_data]
+            if pre.type != post.type:
+                print('mismatch types on operator', data)
+                print(pre.type, 'is not compatable with', post.type)
+                exit()
+
         ops_map = {
             '+': Ops.Add,
             '*': Ops.Mul,
@@ -110,11 +345,19 @@ def tree_expr(tokens):
             '<': Ops.Less_than,
             '!=': Ops.Not_equal,
             '==': Ops.Equal,
+            '=': Ops.Set_equal,
+            '+=': Ops.Set_add,
+            '-=': Ops.Set_sub,
+            '*=': Ops.Set_mul,
+            '/=': Ops.Set_div,
         }
-        return ops_map[data](pre, post)
+
+        # set_ops = ['=', '-=', '*=', '/=', '+=']
+
+        ret = ops_map[data](pre, post)
+        return ret
     if len(tokens) == 1:
         return tokens[0]
-
 
 def tree(tokens, break_upon='semicolon'):
     curly_mat = pair(tokens, ['{', '}'])
@@ -158,3 +401,5 @@ def tree(tokens, break_upon='semicolon'):
     type = 'code' if break_upon == 'semicolon' else 'tuple'
     ret = T_code(ret, type)
     return ret
+
+name_types = {}
