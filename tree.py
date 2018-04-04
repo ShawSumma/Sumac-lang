@@ -3,12 +3,12 @@ import lex
 
 def view_single(to, tabs, name):
     if isinstance(to, lex.Token):
-        print('      |'*tabs+' '+name+' : '+str(to))
+        print('       '*tabs+' '+name+' : '+str(to))
     elif isinstance(to, list):
         for pl, i in enumerate(to):
             view_single(i, tabs, 'list')
     else:
-        print('      |'*tabs+name+' is next')
+        print('       '*tabs+name+' is next')
         to.display(tabs=tabs)
 
 
@@ -19,7 +19,7 @@ class Chain_op:
         self.chain = chain
 
     def display(self, tabs):
-        print('      |'*tabs+' op   : '+self.name)
+        print('       '*tabs+' op   : '+self.name)
         for pl, i in enumerate(self.chain):
             view_single(i, tabs+1, 'chain '+str(pl))
 
@@ -33,7 +33,7 @@ class Three_op:
         self.cond = cond
 
     def display(self, tabs):
-        print('      |'*tabs+' op   : '+self.name)
+        print('       '*tabs+' op   : '+self.name)
         view_single(self.pre, tabs+1, 'pre ')
         view_single(self.cond, tabs+1, 'cond')
         view_single(self.post, tabs+1, 'post')
@@ -51,7 +51,7 @@ class Two_op:
         self.type = self.pre.type
 
     def display(self, tabs):
-        print('      |'*tabs+' op   : '+self.name)
+        print('       '*tabs+' op   : '+self.name)
         view_single(self.pre, tabs+1, 'pre ')
         view_single(self.post, tabs+1, 'post')
 
@@ -68,7 +68,7 @@ class One_op:
         self.type = self.pre.type
 
     def display(self, tabs):
-        print('      |'*tabs+'op   : '+self.name)
+        print('       '*tabs+'op   : '+self.name)
         view_single(self.pre, tabs+1, 'pre ')
 
 
@@ -205,6 +205,7 @@ class Ops:
         def to_llvm(self):
             pass
 
+
 class T_code:
 
     def __init__(self, code, type='code'):
@@ -223,10 +224,10 @@ class T_code:
             tabs = 0
         else:
             tabs = tabs[0]
-        print('      |'*tabs+' code : '+self.type+' : '+str(len(self.code)))
+        print('       '*tabs+' code : '+self.type+' : '+str(len(self.code)))
         for i in self.code:
             i.display(tabs=tabs+1)
-            print('      |'*(tabs+1))
+            print('       '*(tabs+1))
 
     def to_llvm(self):
         pass
@@ -239,7 +240,7 @@ class T_line:
         self.code = code
 
     def display(self, tabs):
-        self.code.display(tabs)
+        view_single(self.code, tabs, ' code')
 
     def __str__(self):
         return str(self.tokens)
@@ -249,12 +250,24 @@ class T_line:
     def to_llvm(self):
         pass
 
+
 class T_none:
     def __init__(self):
         pass
 
     def display(self, *tabs):
         pass
+
+
+class T_function:
+    def __init__(self, name, perams):
+        self.name = tree_expr(name)
+        self.perams = perams
+
+    def display(self, tabs):
+        view_single(self.name, tabs, 'name')
+        self.perams.display(tabs)
+
 
 def pair(list, items):
     ret = {}
@@ -273,7 +286,7 @@ def pair(list, items):
 def use_var(name):
     if name in name_types:
         return name_types[name]
-    print('varriable not found',name)
+    print('varriable not found', name)
 
 
 def tree_expr(tokens):
@@ -284,7 +297,7 @@ def tree_expr(tokens):
             types.append(token.type)
             datas.append(token.raw_data)
         else:
-            types.apepnd('unknown')
+            types.append('unknown')
             datas.append(token)
     if 'operator' in types:
         ord_ops = []
@@ -351,13 +364,22 @@ def tree_expr(tokens):
             '*=': Ops.Set_mul,
             '/=': Ops.Set_div,
         }
-
-        # set_ops = ['=', '-=', '*=', '/=', '+=']
-
         ret = ops_map[data](pre, post)
         return ret
+
     if len(tokens) == 1:
         return tokens[0]
+
+    if len(tokens) > 1:
+        if isinstance(tokens[-1], T_code):
+            if isinstance(tokens[-2], lex.Token):
+                fn_name = tokens[-2].raw_data
+            else:
+                print(tokens[:-1])
+            ret = T_function(tokens[:-1], tokens[-1])
+            ret.type = function_types[fn_name]
+            return ret
+
 
 def tree(tokens, break_upon='semicolon'):
     curly_mat = pair(tokens, ['{', '}'])
@@ -402,4 +424,9 @@ def tree(tokens, break_upon='semicolon'):
     ret = T_code(ret, type)
     return ret
 
+
 name_types = {}
+function_types = {
+    'int': 'int',
+    'str': 'str',
+}

@@ -112,9 +112,6 @@ def macro(code):
                     code = code[:original_pl]+code[original_pl+1:]
                 interm = interm[:-2]
                 if cond:
-                    # print('--now interm--')
-                    # print(interm)
-                    # print('--end interm--')
                     interm = macro(interm)
                 else:
                     interm = ''
@@ -128,9 +125,6 @@ def macro(code):
             while pl < len(code) and code[pl] != cpl:
                 pl += 1
         pl += 1
-    # print('--now code--')
-    # print(code)
-    # print('--end code--')
     return code
 
 
@@ -195,7 +189,7 @@ def tokenize(icode):
             pl = 1
             while len(code) > pl and code[pl] not in '\"\'':
                 pl += 1
-            new_token = Token('string', code[:pl+1])
+            new_token = Token('str', code[:pl+1])
             return_tokens.append(new_token)
             end_flag = True
             continue
