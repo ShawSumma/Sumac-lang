@@ -1,4 +1,5 @@
 import lex
+from llvm_ops import Ops
 
 
 class T_code:
@@ -19,29 +20,31 @@ class T_code:
             tabs = 0
         else:
             tabs = tabs[0]
-        print('    |'*tabs+'code: '+self.type+' : '+str(len(self.code)))
+        print('      |'*tabs+' code : '+self.type+' : '+str(len(self.code)))
         for i in self.code:
             i.display(tabs=tabs+1)
-            print('    |'*(tabs+1))
+            print('      |'*(tabs+1))
+
+    def to_llvm(self):
+        pass
 
 
 class T_line:
 
     def __init__(self, tokens):
-        self.tokens = tokens
+        code = tree_expr(tokens)
+        self.code = code
 
     def display(self, tabs):
-        for i in self.tokens:
-            if isinstance(i, lex.Token):
-                print('    |'*tabs+str(i))
-            else:
-                i.display(tabs+1)
+        self.code.display(tabs)
 
     def __str__(self):
         return str(self.tokens)
 
     __repr__ = __str__
 
+    def to_llvm(self):
+        pass
 
 def pair(list, items):
     ret = {}
@@ -57,18 +60,60 @@ def pair(list, items):
     return ret
 
 
-def invert_pair(list, items):
-    ret = {}
-    hold = {}
-    depth = 0
-    for pl, i in enumerate(list):
-        if i.raw_data == items[0]:
-            depth += 1
-            hold[depth] = pl
-        if i.raw_data == items[1]:
-            ret[pl] = hold[depth]
-            depth -= 1
-    return ret
+def tree_expr(tokens):
+    types = []
+    datas = []
+    for token in tokens:
+        if isinstance(token, lex.Token):
+            types.append(token.type)
+            datas.append(token.raw_data)
+        else:
+            types.apepnd('unknown')
+            datas.append(token)
+    if 'operator' in types:
+        ord_ops = []
+        ord_ops.append(['&&', '||'])
+        ord_ops.append(['<=', '>=', '<', '>'])
+        ord_ops.append(['!=', '=='])
+        ord_ops.append(['+', '-'])
+        ord_ops.append(['*', '/'])
+        ord_ops.append(['**'])
+        ord_ops.append(['error'])
+        # ord_ops = ord_ops[::-1]
+        found = False
+        for order in ord_ops:
+            for data in datas:
+                if data in order:
+                    found = True
+                    break
+            if found:
+                break
+        else:
+            print('unknown operator')
+            exit()
+        index = datas.index(data)
+        pre = tokens[:index]
+        post = tokens[index+1:]
+        pre = tree_expr(pre)
+        post = tree_expr(post)
+        ops_map = {
+            '+': Ops.Add,
+            '*': Ops.Mul,
+            '-': Ops.Sub,
+            '/': Ops.Div,
+            '**': Ops.Pow,
+            '&&': Ops.And,
+            '||': Ops.Sub,
+            '>=': Ops.Not_less_than,
+            '<=': Ops.Not_greater_than,
+            '>': Ops.Greater_than,
+            '<': Ops.Less_than,
+            '!=': Ops.Not_equal,
+            '==': Ops.Equal,
+        }
+        return ops_map[data](pre, post)
+    if len(tokens) == 1:
+        return tokens[0]
 
 
 def tree(tokens, break_upon='semicolon'):

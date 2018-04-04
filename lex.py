@@ -164,7 +164,7 @@ def tokenize(icode):
         compiled_regexes[i] = re.compile(match_regexes[i])
 
     operators = ['+', '-', '*', '/', '^', '%', '&', '&&', '||', '<', '>',
-                 '<=', '>=', '+=', '-=', '*=', '/=', '=', '==', '!=']
+                 '<=', '>=', '+=', '-=', '*=', '/=', '=', '==', '!=', '**']
     operators.sort(key=lambda op: 100-len(op))
 
     brace_types = '{}()[],'
