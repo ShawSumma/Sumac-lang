@@ -1,12 +1,17 @@
 import lex
 import variable
 
+imported = []
+
 
 def compile_all(tree):
     global compiled
     global ctabs
+    global imported
     ctabs = 0
     compiled = ''
+    for header in imported:
+        compiled += "#include "+header
     compiled += 'int main(){\n'
     tree.to_c()
     compiled += '}'
@@ -16,7 +21,7 @@ def compile_all(tree):
 def add_code(code):
     global compiled
     global ctabs
-    compiled += '\t'*ctabs
+    compiled += " "*ctabs*4
     compiled += code
     compiled += '\n'
 
@@ -114,85 +119,87 @@ class Ops:
         name = 'multiply'
 
         def to_c(self):
-            add_code("{0} + {1}".format(self.pre, self.post))
+            add_code("{0} * {1}".format(self.pre, self.post))
 
     class Sub(Two_op):
         name = 'subtract'
 
         def to_c(self):
-            pass
+            add_code("{0} * {1}".format(self.pre, self.post))
 
     class Div(Two_op):
         name = 'devide'
 
         def to_c(self):
-            pass
+            add_code("{0} / {1}".format(self.pre, self.post))
 
     class Pow(Two_op):
         name = 'raise to'
 
         def to_c(self):
-            pass
+            imported.append("<math.h>")
+            add_code("pow({0}, {1})".format(str(float(self.pre)),
+                                            str(float(self.post))))
 
     class Mod(Two_op):
         name = 'modulo'
 
         def to_c(self):
-            pass
+            add_code("{0} % {1}".format(self.pre, self.post))
 
     class Not_greater_than(Two_op):
         name = 'less than or equal'
 
         def to_c(self):
-            pass
+            add_code("{0} <= {1}".format(self.pre, self.post))
 
     class Not_less_than(Two_op):
         name = 'greater than or equal'
 
         def to_c(self):
-            pass
+            add_code("{0} >= {1}".format(self.pre, self.post))
 
     class Greater_than(Two_op):
         name = 'greater than'
 
         def to_c(self):
-            pass
+            add_code("{0} > {1}".format(self.pre, self.post))
 
     class Less_than(Two_op):
         name = 'less than'
 
         def to_c(self):
-            pass
+            add_code("{0} < {1}".format(self.pre, self.post))
 
     class Not_equal(Two_op):
         name = 'not equal to'
 
         def to_c(self):
-            pass
+            add_code("{0} != {1}".format(self.pre, self.post))
 
     class Equal(Two_op):
         name = 'euqal to'
 
         def to_c(self):
-            pass
+            add_code("{0} == {1}".format(self.pre, self.post))
 
     class And(Two_op):
         name = 'and'
 
         def to_c(self):
-            pass
+            add_code("{0} && {1}".format(self.pre, self.post))
 
     class Or(Two_op):
         name = 'Or'
 
         def to_c(self):
-            pass
+            add_code("{0} || {1}".format(self.pre, self.post))
 
     class Not(One_op):
         name = 'not'
 
         def to_c(self):
-            pass
+            add_code("{0} ! {1}".format(self.pre, self.post))
 
     class Negate(One_op):
         name = 'negate'
@@ -268,7 +275,7 @@ class T_code:
 
     def to_c(self):
         global ctabs
-        ctabs  += 1
+        ctabs += 1
         for i in self.code:
             add_code(i)
         ctabs -= 1
