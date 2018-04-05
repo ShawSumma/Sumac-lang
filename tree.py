@@ -174,43 +174,43 @@ class Ops:
         name = 'euqal to'
 
         def to_c(self):
-            return "{0} == {1}".format(self.pre.to_c(), self.post)
+            return "{0} == {1}".format(self.pre.to_c(), self.post.to_c())
 
     class And(Two_op):
         name = 'and'
 
         def to_c(self):
-            return "{0} && {1}".format(self.pre.to_c(), self.post)
+            return "{0} && {1}".format(self.pre.to_c(), self.post.to_c())
 
     class Or(Two_op):
         name = 'Or'
 
         def to_c(self):
-            return "{0} || {1}".format(self.pre.to_c(), self.post)
+            return "{0} || {1}".format(self.pre.to_c(), self.post.to_c())
 
     class Not(One_op):
         name = 'not'
 
         def to_c(self):
-            return "!{1}".format(self.post)
+            return "!{1}".format(self.post.to_c())
 
     class Negate(One_op):
         name = 'negate'
 
         def to_c(self):
-            pass
+            return "-{1}".format(self.post.to_c())
 
     class Pointer(One_op):
         name = 'pointer'
 
         def to_c(self):
-            pass
+            return "*{1}".format(self.post.to_c())
 
     class Address_of(One_op):
         name = 'address of'
 
         def to_c(self):
-            pass
+            return "&{1}".format(self.post.to_c())
 
     class Set_equal(Two_op):
         name = 'set equal to'
@@ -221,29 +221,46 @@ class Ops:
             compiled += '\t'*ctabs
             compiled += typeof+" {0} = {1};".format(self.pre.to_c(), self.post.to_c())
             compiled += '\n'
+
     class Set_add(Two_op):
         name = 'set and add'
 
         def to_c(self):
-            pass
+            global compiled
+            typeof = name_types[self.pre.data]
+            compiled += '\t'*ctabs
+            compiled += typeof+" {0} += {1};".format(self.pre.to_c(), self.post.to_c())
+            compiled += '\n'
 
     class Set_sub(Two_op):
         name = 'set and subtract'
 
         def to_c(self):
-            pass
+            global compiled
+            typeof = name_types[self.pre.data]
+            compiled += '\t'*ctabs
+            compiled += typeof+" {0} -= {1};".format(self.pre.to_c(), self.post.to_c())
+            compiled += '\n'
 
     class Set_mul(Two_op):
         name = 'set and multiply'
 
         def to_c(self):
-            pass
+            global compiled
+            typeof = name_types[self.pre.data]
+            compiled += '\t'*ctabs
+            compiled += typeof+" {0} *= {1};".format(self.pre.to_c(), self.post.to_c())
+            compiled += '\n'
 
     class Set_div(Two_op):
         name = 'set and devide'
 
         def to_c(self):
-            pass
+            global compiled
+            typeof = name_types[self.pre.data]
+            compiled += '\t'*ctabs
+            compiled += typeof+" {0} /= {1};".format(self.pre.to_c(), self.post.to_c())
+            compiled += '\n'
 
 
 class T_code:
