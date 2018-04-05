@@ -18,14 +18,6 @@ def compile_all(tree):
     return compiled
 
 
-def add_code(code):
-    global compiled
-    global ctabs
-    compiled += " "*ctabs*4
-    compiled += code
-    compiled += '\n'
-
-
 def view_single(to, tabs, name):
     if isinstance(to, lex.Token):
         print('       '*tabs+' '+name+' : '+str(to))
@@ -105,7 +97,9 @@ class T_return(One_op):
         view_single(self.post, tabs+1, 'post ')
 
     def to_c(self):
-        pass
+        global compiled
+        compiled += '\t'*ctabs + 'return ' + self.post.to_c() + ';\n'
+        return ''
 
 
 class Ops:
@@ -113,93 +107,92 @@ class Ops:
         name = 'add'
 
         def to_c(self):
-            add_code("{0} + {1}".format(self.pre, self.post))
+            return "{0} + {1}".format(self.pre.to_c(), self.post.to_c())
 
     class Mul(Two_op):
         name = 'multiply'
 
         def to_c(self):
-            add_code("{0} * {1}".format(self.pre, self.post))
+            return "{0} * {1}".format(self.pre.to_c(), self.post.to_c())
 
     class Sub(Two_op):
         name = 'subtract'
 
         def to_c(self):
-            add_code("{0} * {1}".format(self.pre, self.post))
+            return "{0} * {1}".format(self.pre.to_c(), self.post.to_c())
 
     class Div(Two_op):
         name = 'devide'
 
         def to_c(self):
-            add_code("{0} / {1}".format(self.pre, self.post))
+            return "{0} / {1}".format(self.pre.to_c(), self.post.to_c())
 
     class Pow(Two_op):
         name = 'raise to'
 
         def to_c(self):
             imported.append("<math.h>")
-            add_code("pow({0}, {1})".format(str(float(self.pre)),
-                                            str(float(self.post))))
+            return "pow({0}, {1})".format(self.pre.to_c(), self.post.to_c())
 
     class Mod(Two_op):
         name = 'modulo'
 
         def to_c(self):
-            add_code("{0} % {1}".format(self.pre, self.post))
+            return "{0} % {1}".format(self.pre.to_c(), self.pos.to_c())
 
     class Not_greater_than(Two_op):
         name = 'less than or equal'
 
         def to_c(self):
-            add_code("{0} <= {1}".format(self.pre, self.post))
+            return "{0} <= {1}".format(self.pre.to_c(), self.post.to_c())
 
     class Not_less_than(Two_op):
         name = 'greater than or equal'
 
         def to_c(self):
-            add_code("{0} >= {1}".format(self.pre, self.post))
+            return "{0} >= {1}".format(self.pre.to_c(), self.post.to_c())
 
     class Greater_than(Two_op):
         name = 'greater than'
 
         def to_c(self):
-            add_code("{0} > {1}".format(self.pre, self.post))
+            return "{0} > {1}".format(self.pre.to_c(), self.post.to_c())
 
     class Less_than(Two_op):
         name = 'less than'
 
         def to_c(self):
-            add_code("{0} < {1}".format(self.pre, self.post))
+            return "{0} < {1}".format(self.pre.to_c(), self.post.to_c())
 
     class Not_equal(Two_op):
         name = 'not equal to'
 
         def to_c(self):
-            add_code("{0} != {1}".format(self.pre, self.post))
+            return "{0} != {1}".format(self.pre.to_c(), self.post.to_c())
 
     class Equal(Two_op):
         name = 'euqal to'
 
         def to_c(self):
-            add_code("{0} == {1}".format(self.pre, self.post))
+            return "{0} == {1}".format(self.pre.to_c(), self.post)
 
     class And(Two_op):
         name = 'and'
 
         def to_c(self):
-            add_code("{0} && {1}".format(self.pre, self.post))
+            return "{0} && {1}".format(self.pre.to_c(), self.post)
 
     class Or(Two_op):
         name = 'Or'
 
         def to_c(self):
-            add_code("{0} || {1}".format(self.pre, self.post))
+            return "{0} || {1}".format(self.pre.to_c(), self.post)
 
     class Not(One_op):
         name = 'not'
 
         def to_c(self):
-            add_code("{0} ! {1}".format(self.pre, self.post))
+            return "!{1}".format(self.post)
 
     class Negate(One_op):
         name = 'negate'
@@ -223,8 +216,11 @@ class Ops:
         name = 'set equal to'
 
         def to_c(self):
-            pass
-
+            global compiled
+            typeof = name_types[self.pre.data]
+            compiled += '\t'*ctabs
+            compiled += typeof+" {0} = {1};".format(self.pre.to_c(), self.post.to_c())
+            compiled += '\n'
     class Set_add(Two_op):
         name = 'set and add'
 
@@ -277,7 +273,7 @@ class T_code:
         global ctabs
         ctabs += 1
         for i in self.code:
-            add_code(i)
+            i.to_c()
         ctabs -= 1
 
 
@@ -297,7 +293,7 @@ class T_line:
     __repr__ = __str__
 
     def to_c(self):
-        pass
+        self.code.to_c()
 
 
 class T_none:
@@ -320,6 +316,25 @@ class T_function:
     def to_c(self):
         pass
 
+
+class T_token:
+
+    def __init__(self, token):
+        self.data = token.raw_data
+        self.raw_data = self.data
+        self.type = token.type
+        self.token = token
+
+    def __str__(self):
+        return str(self.data)
+
+    def display(self,tabs):
+        print('       '*tabs+' '+str(self.token))
+
+    def to_c(self):
+        return self.raw_data
+
+    __repr__ = __str__
 
 def pair(list, items):
     ret = {}
@@ -485,7 +500,7 @@ def tree_expr(tokens):
         if isinstance(tokens[0], T_code) and tokens[0].type == 'tuple':
             if len(tokens[0].code) == 1:
                 return tokens[0].code[0]
-        return tokens[0]
+        return T_token(tokens[0])
 
     if len(tokens) > 1:
         if isinstance(tokens[-1], T_code):
@@ -498,7 +513,7 @@ def tree_expr(tokens):
             return ret
         if isinstance(tokens[0], lex.Token):
             name = tokens[0].raw_data
-            if name == 'return':
+            if name == 'ret':
                 return T_return(tree_expr(tokens[1:]))
 
 

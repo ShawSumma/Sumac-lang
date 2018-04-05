@@ -1,3 +1,4 @@
 int main(){
-code
+	int x = 4;
+	return x;
 }
