@@ -107,3 +107,6 @@ venv.bak/
 .DS_Store
 *.pyc
 *.pyc
+
+#pycharm
+.idea
